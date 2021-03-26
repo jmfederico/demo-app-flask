@@ -1,0 +1,30 @@
+# .github/workflows/python_deploy.yml
+#
+# The environment variables can be configured at:
+# https://github.com/{YOU}/{YOUR_PROJECT}/settings/secrets/actions
+
+# Run only when commiting to "main"
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  python_deploy:
+    # Use the AWS Lambda image for your Python version.
+    container: lambci/lambda:build-python3.8
+    name: Build and Deploy with PythonDeploy
+    runs-on: ubuntu-latest
+    env:
+      PD_API_KEY: ${{ secrets.PD_API_KEY }}
+      PD_APP_ID: ${{ secrets.PD_APP_ID }}
+    steps:
+      - uses: actions/checkout@v2
+      # We need a requirements.txt file for the dependencies.
+      - run: poetry export -f requirements.txt -o requirements.txt --without-hashes
+
+      # Deploy our code and wait until lambdas have been updated.
+      - run: pipx run --spec "pd_aws_lambda[deploy]~=1.0" pd_build_and_deploy --wait
+
+      # Post deploy tasks: run migrations
+      - run: pipx run --spec "pd_aws_lambda[deploy]~=1.0" pd_run -- python3 -m flask db upgrade

@@ -1,0 +1,36 @@
+<!doctype html>
+
+<head>
+  <!-- Google Fonts -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
+
+  <!-- CSS Reset -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.css">
+
+  <!-- Milligram CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.css">
+
+  <title>Python Deploy Task List</title>
+</head>
+<div class="container">
+  <h1>Python Deploy Task List</h1>
+  <div class="row">
+    <form method="post">
+      {{ form.csrf_token }}
+      <button type=submit>Create task</button>
+      <button type=submit class="button-outline" name="clear">Delete all tasks</button>
+    </form>
+  </div>
+  <h2 class="row">
+    <span class="column">UUID</span>
+    <span class="column">Created at</span>
+    <span class="column">Completed at</span>
+  </h2>
+  {% for task in tasks %}
+  <div class="row">
+    <div class="column">{{ task.uuid }}</div>
+    <div class="column">{{ task.created_at }}</div>
+    <div class="column">{{ task.completed_at if task.completed_at is not none else '-' }}</div>
+  </div>
+  {% endfor %}
+</div>

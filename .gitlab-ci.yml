@@ -1,0 +1,22 @@
+# .gitlab-ci.yml
+#
+# The environment variables can be configured at:
+# https://gitlab.com/{YOU}/{YOUR_PROJECT}/-/settings/ci_cd
+#
+# Use the AWS Lambda image for your Python version.
+image: "lambci/lambda:build-python3.8"
+
+python_deploy:
+  stage: deploy
+  # Run only when commiting to "main"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  script:
+    # We need a requirements.txt file for the dependencies.
+    - poetry export -f requirements.txt -o requirements.txt --without-hashes
+
+    # Deploy our code and wait until lambdas have been updated.
+    - pipx run --spec "pd_aws_lambda[deploy]~=1.0" pd_build_and_deploy --wait
+
+    # Post deploy tasks: run migrations and collect staticfiles to s3
+    - pipx run --spec "pd_aws_lambda[deploy]~=1.0" pd_run -- python3 -m flask db upgrade
