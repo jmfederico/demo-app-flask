@@ -11,8 +11,9 @@ on:
 
 jobs:
   python_deploy:
-    # Use the AWS Lambda image for your Python version.
-    container: lambci/lambda:build-python3.8
+    # Microsoft has some very useful Docker images for dev usage
+    # that include `pipx` and other python tools.
+    container: mcr.microsoft.com/vscode/devcontainers/python:3.9
     name: Build and Deploy with PythonDeploy
     runs-on: ubuntu-latest
     env:
@@ -20,11 +21,11 @@ jobs:
       PD_APP_ID: ${{ secrets.PD_APP_ID }}
     steps:
       - uses: actions/checkout@v2
-      # We need a requirements.txt file for the dependencies.
-      - run: poetry export -f requirements.txt -o requirements.txt --without-hashes
 
-      # Deploy our code and wait until lambdas have been updated.
-      - run: pipx run --spec "pd_aws_lambda[deploy]~=1.0" pd_build_and_deploy --wait
+      # Install the python-deploy cli
+      - run: pipx install "pd_cli~=1.0"
 
-      # Post deploy tasks: run migrations
-      - run: pipx run --spec "pd_aws_lambda[deploy]~=1.0" pd_run -- python3 -m flask db upgrade
+      # Build the docker image
+      - run: python-deploy build python-deploy:release
+      # Deploy the docker image
+      - run: python-deploy deploy python-deploy:release

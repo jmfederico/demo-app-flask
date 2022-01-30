@@ -3,20 +3,31 @@
 # The environment variables can be configured at:
 # https://gitlab.com/{YOU}/{YOUR_PROJECT}/-/settings/ci_cd
 #
-# Use the AWS Lambda image for your Python version.
-image: "lambci/lambda:build-python3.8"
+# Microsoft has some very useful Docker images for dev usage
+# that include `pipx` and other python tools.
+image: mcr.microsoft.com/vscode/devcontainers/python:3.9
+
+# Enable Docker in Docker, and configure it.
+# https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#docker-in-docker-with-tls-enabled
+services:
+  - docker:20-dind
+variables:
+  DOCKER_HOST: tcp://docker:2376
+  DOCKER_TLS_CERTDIR: "/certs"
+  DOCKER_TLS_VERIFY: 1
+  DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
 
 python_deploy:
   stage: deploy
   # Run only when commiting to "main"
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
+  before_script:
+    # Install the python-deploy cli
+    - pipx install pd_cli~=1.0
+
   script:
-    # We need a requirements.txt file for the dependencies.
-    - poetry export -f requirements.txt -o requirements.txt --without-hashes
-
-    # Deploy our code and wait until lambdas have been updated.
-    - pipx run --spec "pd_aws_lambda[deploy]~=1.0" pd_build_and_deploy --wait
-
-    # Post deploy tasks: run migrations and collect staticfiles to s3
-    - pipx run --spec "pd_aws_lambda[deploy]~=1.0" pd_run -- python3 -m flask db upgrade
+    # Build the docker image
+    - python-deploy build python-deploy:release
+    # Deploy the docker image
+    - python-deploy deploy python-deploy:release

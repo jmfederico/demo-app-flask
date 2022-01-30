@@ -1,12 +1,12 @@
 [tool.poetry]
 name = "Python Deploy Flask demo"
-version = "0.1.0"
+version = "1.0.0"
 description = "A Flask app ready to be deployed with pythondeploy.co"
 authors = ["Federico Jaramillo Martínez <federicojaramillom@gmail.com>"]
 license = "Unlicense"
 
 [tool.poetry.dependencies]
-python = "~3.7"
+python = "^3.8"
 Flask = ">=1.1.2"
 boto3 = ">=1.17.33"
 psycopg2-binary = ">=2.8.6"
@@ -14,10 +14,15 @@ Flask-Migrate = ">=2.7.0"
 Flask-SQLAlchemy = ">=2.5.1"
 Flask-WTF = ">=0.14.3"
 pd-aws-lambda = ">=1.0.0"
-
+gunicorn = "^20.1.0"
 
 [tool.poetry.dev-dependencies]
+black = "*"
+isort = "*"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.isort]
+profile = "black"
