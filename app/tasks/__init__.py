@@ -40,7 +40,11 @@ def tasks():
 
         return redirect(url_for("tasks.tasks"))
 
-    return render_template("tasks.html", tasks=Task.query.all(), form=FlaskForm())
+    return render_template(
+        "tasks.html",
+        tasks=Task.query.order_by(Task.created_at.desc()).all(),
+        form=FlaskForm(),
+    )
 
 
 @bp.cli.command("consume-sqs")
