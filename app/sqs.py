@@ -1,6 +1,7 @@
 from . import create_app
 
 app = create_app()
+app.app_context().push()
 
 def get_lambda_sqs_event_handler():
     from .tasks.sqs import task_lambda_sqs_event_handler
