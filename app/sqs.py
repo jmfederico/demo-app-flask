@@ -1,18 +1,11 @@
-from uuid import UUID
-
 from . import create_app
-from .tasks import complete_task
 
 app = create_app()
 
+def get_lambda_sqs_event_handler():
+    from tasks.sqs import task_lambda_sqs_event_handler
 
-def sqs_event_handler(event, context):
-    with app.app_context():
-        for record in event["Records"]:
-            task_uuid = record["body"]
-            try:
-                UUID(task_uuid)
-            except ValueError:
-                return
+    return task_lambda_sqs_event_handler
 
-            complete_task(task_uuid)
+
+lambda_sqs_event_handler = get_lambda_sqs_event_handler()
